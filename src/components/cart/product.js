@@ -1,15 +1,17 @@
-import React, { useContext, useMemo } from 'react';
-import { AmountButton } from '../../ui/amount-button/amount-button';
-import { DeleteButton } from '../../ui/delete-button/delete-button';
+import React, {useContext, useMemo} from 'react';
+import {AmountButton} from '../../ui/amount-button/amount-button';
+import {DeleteButton} from '../../ui/delete-button/delete-button';
 import styles from './product.module.css';
 
-import { DiscountContext, TotalCostContext } from '../../services/appContext';
-import { DataContext } from '../../services/productsContext';
+import {DiscountContext, TotalCostContext} from '../../services/appContext';
+import {useDispatch} from "react-redux";
+import {decreaseItem, deleteItem, increaseItem} from "../../services/actions/cart";
 
 export const Product = ({ src, id, text, qty, price }) => {
   const { totalPrice, setTotalPrice } = useContext(TotalCostContext);
   const { discount } = useContext(DiscountContext);
-  const { data, setData } = useContext(DataContext);
+
+  const dispatch = useDispatch();
 
   const discountedPrice = useMemo(() => ((price - price * (discount / 100)) * qty).toFixed(0), [
     discount,
@@ -18,7 +20,7 @@ export const Product = ({ src, id, text, qty, price }) => {
   ]);
 
   const onDelete = () => {
-    setData(data.filter(item => item.id !== id));
+    dispatch(deleteItem(id));
   };
 
   const decrease = () => {
@@ -26,27 +28,13 @@ export const Product = ({ src, id, text, qty, price }) => {
       onDelete();
     } else {
       setTotalPrice(totalPrice - price);
-      const newData = data.map(item => {
-        if (item.id === id) {
-          item.qty -= 1;
-          return item;
-        }
-        return item;
-      });
-      setData(newData);
+      dispatch(decreaseItem(id));
     }
   };
 
   const increase = () => {
     setTotalPrice(totalPrice + price);
-    const newData = data.map(item => {
-      if (item.id === id) {
-        item.qty += 1;
-        return item;
-      }
-      return item;
-    });
-    setData(newData);
+    dispatch(increaseItem(id));
   };
 
   return (

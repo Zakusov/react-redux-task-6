@@ -1,11 +1,5 @@
-import {
-  DELETE_ITEM,
-  CANCEL_PROMO,
-  DECREASE_ITEM,
-  INCREASE_ITEM,
-  TAB_SWITCH,
-} from '../actions/cart';
-import { recommendedItems, items } from '../initialData';
+import {CANCEL_PROMO, DECREASE_ITEM, DELETE_ITEM, INCREASE_ITEM, SET_ITEMS, TAB_SWITCH,} from '../actions/cart';
+import {items, recommendedItems} from '../initialData';
 
 const initialState = {
   items,
@@ -24,6 +18,12 @@ export const cartReducer = (state = initialState, action) => {
       return {
         ...state,
         currentTab: state.currentTab === 'items' ? 'postponed' : 'items'
+      };
+    }
+    case SET_ITEMS: {
+      return {
+        ...state,
+        items: [...action.items]
       };
     }
     case INCREASE_ITEM: {
