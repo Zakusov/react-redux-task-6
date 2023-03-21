@@ -1,21 +1,25 @@
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { applyPromoCodeRequest, getItemsRequest } from '../../services/fakeApi';
+import React, {useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
+import {applyPromoCodeRequest, getItemsRequest} from '../../services/fakeApi';
 import styles from './products-container.module.css';
-import { Product } from './product';
-import { Input } from '../../ui/input/input';
-import { MainButton } from '../../ui/main-button/main-button';
-import { PromoButton } from '../../ui/promo-button/promo-button';
-import { Loader } from '../../ui/loader/loader';
+import {Product} from './product';
+import {Input} from '../../ui/input/input';
+import {MainButton} from '../../ui/main-button/main-button';
+import {PromoButton} from '../../ui/promo-button/promo-button';
+import {Loader} from '../../ui/loader/loader';
 
-import { DiscountContext, TotalCostContext } from '../../services/appContext';
-import { DataContext, PromoContext } from '../../services/productsContext';
+import {DiscountContext, TotalCostContext} from '../../services/appContext';
+import {PromoContext} from '../../services/productsContext';
+import {useDispatch, useSelector} from "react-redux";
+import {setItems} from "../../services/actions/cart";
 
 export const ProductsContainer = () => {
   const { setTotalPrice } = useContext(TotalCostContext);
   const { setDiscount } = useContext(DiscountContext);
 
-  const [data, setData] = useState([]);
   const [promo, setPromo] = useState('');
+
+  const items = useSelector(store => store.cart.items);
+  const dispatch = useDispatch();
 
   const [itemsRequest, setItemsRequest] = useState(false);
   const [promoFailed, setPromoFailed] = useState(false);
@@ -28,7 +32,7 @@ export const ProductsContainer = () => {
     getItemsRequest()
       .then(res => {
         if (res && res.success) {
-          setData(res.data);
+            dispatch(setItems(res.data));
           setItemsRequest(false);
         }
       })
@@ -41,10 +45,10 @@ export const ProductsContainer = () => {
   useEffect(
     () => {
       let total = 0;
-      data.map(item => (total += item.price * item.qty));
+      items.map(item => (total += item.price * item.qty));
       setTotalPrice(total);
     },
-    [data, setTotalPrice]
+    [items, setTotalPrice]
   );
 
   const applyPromoCode = useCallback(
@@ -78,12 +82,12 @@ export const ProductsContainer = () => {
       return itemsRequest ? (
         <Loader size="large" />
       ) : (
-        data.map((item, index) => {
+        items.map((item, index) => {
           return <Product key={index} {...item} />;
         })
       );
     },
-    [itemsRequest, data]
+    [itemsRequest, items]
   );
 
   const promoCodeStatus = useMemo(
@@ -103,7 +107,6 @@ export const ProductsContainer = () => {
 
   return (
     <div className={`${styles.container}`}>
-      <DataContext.Provider value={{ data, setData }}>
         <PromoContext.Provider value={{ promo, setPromo }}>
           {content}
           <div className={styles.promo}>
@@ -128,7 +131,6 @@ export const ProductsContainer = () => {
           </div>
           {promoCodeStatus}
         </PromoContext.Provider>
-      </DataContext.Provider>
     </div>
   );
 };
